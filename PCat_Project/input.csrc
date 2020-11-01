@@ -30,4 +30,3 @@ FOR I:=0 TO SIZE-1 DO
 WRITE(D[I][0]," ",D[I][1]," ",D[I][2]," ",D[I][3],"
 ",D[I][4]);
 END;
-END;

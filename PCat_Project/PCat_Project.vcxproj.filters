@@ -26,12 +26,18 @@
     <ClInclude Include="symbols.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="p.tab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="pCat.lex">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="input.csrc">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="p.y">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
