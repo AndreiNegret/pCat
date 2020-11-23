@@ -14,9 +14,9 @@ void count();
 
 %%
 "/*"			{ comment(); }
-"AND"			{ count(); return(AND_OP); }
+"AND"			{ count(); return (AND_OP); }
 "ARRAY"			{ count(); return(ARRAY); }
-"BEGIN"			{ count(); return(BEGIN); }
+"BEGINTEST"			{ count(); return(BEGINTEST); }
 "BY"			{ count(); return(BY); }
 "DIV"			{ count(); return(DIV); }
 "DO"			{ count(); return(DO); }
@@ -72,8 +72,8 @@ L?\"(\\.|[^\\"])*\"	{ count(); return(STRING_LITERAL); }
 "<>"			{ count(); return(NE_OP); }
 ";"			{ count(); return (END_OF_INSTRUCTION);}
 
-"("			{ count(); return(OPEN_BR); }
-")"			{ count(); return(CLOSE_BR); }
+"("			{ count(); return (OPEN_BR); }
+")"			{ count(); return (CLOSE_BR); }
 ("{"|"<%")		{ count(); return(OPEN_CURLY); }
 ("}"|"%>")		{ count(); return(CLOSE_CURLY); }
 ("["|"<:")		{ count(); return(OPEN_SQUARE); }
@@ -136,5 +136,5 @@ void count()
 
 int check_type()
 {
-	return(IDENTIFIER);
+	return(ID);
 }

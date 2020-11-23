@@ -1,117 +1,234 @@
-%{
- /* C declarations used in actions */
-%} 
 
-%token PROGRAM PROCEDURE IS OF BEGIN END EXIT 
-%token IF THEN ELSIF ELSE WHILE DO LOOP FOR TO BY 
-%token RETURN RECORD TYPE ID READ WRITE
-%token STRING INTEGER REAL NOT VAR ARRAY
-%token MOD OR AND ASSIGN OPEN_SQ_ANGL CLOSE_SQ_ANGL OPEN_BR CLOSE_BR OPEN_SQUARE CLOSE_SQUARE OPEN_CURLY CLOSE_CURLY
-%token NE_OP GE_OP LE_OP GT_OP LT_OP EQ_OP
-%token ADD SUB MUL DIV
+%{
+    #include <stdio.h>
+
+	int yyerror(char * s);
+	extern int yylex( );
+%}
+
+%token PROGRAM 
+%token PROCEDURE 
+%token IS 
+%token OF 
+%token BEGINTEST
+%token END 
+%token EXIT 
+%token IF 
+%token THEN 
+%token ELSIF 
+%token ELSE 
+%token WHILE 
+%token DO 
+%token LOOP 
+%token FOR 
+%token TO 
+%token BY 
+%token RETURN 
+%token RECORD 
+%token TYPE 
+%token ID 
+%token READ 
+%token WRITE
+%token STRING 
+%token INTEGER 
+%token REAL 
+%token NOT 
+%token VAR 
+%token ARRAY
+%token MOD 
+%token OR_OP 
+%token ASSIGN 
+%token OPEN_SQ_ANGL 
+%token CLOSE_SQ_ANGL 
+%token OPEN_BR 
+%token CLOSE_BR 
+%token OPEN_SQUARE 
+%token CLOSE_SQUARE  
+%token OPEN_CURLY 
+%token CLOSE_CURLY
+%token NE_OP 
+%token GE_OP 
+%token LE_OP 
+%token GT_OP 
+%token LT_OP 
+%token EQ_OP
+%token ADD 
+%token SUB 
+%token MUL 
+%token DIV
+%token END_OF_INSTRUCTION 
+%token COLON 
+%token COMMA 
+%token DOT
+%token AND_OP
+%token CONSTANT
+%token STRING_LITERAL
+
+
 
 %start program
 
 %%
-program: PROGRAM IS body ';'
-	
-body:  declaration  BEGIN  statement END
 
-declaration:  VAR  var-decl 
+program: PROGRAM IS body END_OF_INSTRUCTION
+		 ;
+	
+body:  declaration_list  BEGINTEST  statement_list END
+		;
+
+declaration_list: declaration
+				| declaration_list declaration
+				;
+
+declaration:  
+	| VAR  var-decl 
 	| TYPE  type-decl 
-	| PROCEDURE  procedure-decl 
+	| PROCEDURE  procedure-decl
+	;
 	
-var-decl: ID ASSIGN expression ';' 
+ID_list: ID
+	     | ID_list COMMA ID
+	     ;
+
+var-decl: simple_assign | var-decl simple_assign
+		;
+
+simple_assign: ID_list ASSIGN expression END_OF_INSTRUCTION
+				;
 	
-type-decl: typename IS type ';'
+type-decl: typename IS type END_OF_INSTRUCTION
+		;
 	
-procedure-decl: ID OPEN_BR formal-params CLOSE_BR IS body ';'
+procedure-decl: ID OPEN_BR formal-params CLOSE_BR COLON typename IS body END_OF_INSTRUCTION
+		;
 
 type: ARRAY OF typename
 	| RECORD component  component  END
+	;
+
 
 typename: ID
+		  ;
 
-component: ID ':' typename ';'
+component: ID COLON typename END_OF_INSTRUCTION
+		   ;
 
-formal-params: OPEN_BR fp-section CLOSE_BR
+fp-section_list: fp-section
+					| fp-section_list fp-section
+					;
+
+formal-params: OPEN_BR fp-section fp-section_list CLOSE_BR
 	| OPEN_BR CLOSE_BR
+	;
 
-fp-section: ID ':' typename
+fp-section: ID COLON typename
+			;
 
-statement: lvalue ASSIGN expression ';'
+statement_list: statement
+				| statement_list statement
+				| 
+				;
+
+statement: lvalue ASSIGN expression END_OF_INSTRUCTION
 	| ID actual-params
-	| READ OPEN_BR lvalue CLOSE_BR ';'
-	| WRITE write-params ';'
-	| IF expression THEN  statement 
-	| ELSIF expression THEN  statement  
-	| ELSE  statement  END ';'
-	| WHILE expression DO  statement  END ';'
-	| LOOP  statement  END ';'
-	| FOR ID ASSIGN expression TO expression DO statement END ';'
-	| EXIT ';'
-	| RETURN expression ';'
+	| READ OPEN_BR lvalue lvalue_list CLOSE_BR END_OF_INSTRUCTION
+	| WRITE write-params END_OF_INSTRUCTION
+	| IF expression THEN  statement_list 
+	| ELSIF expression THEN  statement_list  
+	| ELSE  statement_list  END END_OF_INSTRUCTION
+	| WHILE expression DO  statement_list  END END_OF_INSTRUCTION
+	| LOOP  statement_list  END END_OF_INSTRUCTION
+	| FOR ID ASSIGN expression TO expression DO statement_list END END_OF_INSTRUCTION
+	| EXIT END_OF_INSTRUCTION
+	| RETURN expression END_OF_INSTRUCTION
+	;
 
-write-params: OPEN_BR write-expr ',' write-expr CLOSE_BR
+write-expr_list: write-expr
+				 | write-expr_list COMMA write-expr
+				 ;
+
+write-params: OPEN_BR write-expr_list CLOSE_BR
 	| OPEN_BR CLOSE_BR
+	| OPEN_BR STRING_LITERAL CLOSE_BR
+	;
 
-write-expr: STRING
+write-expr: STRING_LITERAL
 	| expression
+	;
 
 expression: number
 	| lvalue
 	| OPEN_BR expression CLOSE_BR
 	| unary-op expression
-	| binary-op expression
+	| expression binary-op expression
 	| typename actual-params
 	| typename record-inits
 	| typename array-inits
+	;
+
+lvalue_list: lvalue
+			| lvalue_list lvalue 
+			;
 
 lvalue: ID
 	| lvalue OPEN_SQUARE expression CLOSE_SQUARE
-	| lvalue '.' ID
+	| lvalue DOT ID
+	;
 
-actual-params: OPEN_BR expression CLOSE_BR ',' expression CLOSE_BR
-	| OPEN_BR CLOSE_BR
+expression_list: expression
+					| expression_list expression
+					;
+
+actual-params: OPEN_BR expression expression_list CLOSE_BR
+			  | OPEN_BR CLOSE_BR
+			  ;
+
+ID-expression_list: ID ASSIGN expression
+					| ID-expression_list ID ASSIGN expression
+					;
 	
+record-inits: OPEN_CURLY ID ASSIGN expression ID-expression_list CLOSE_CURLY
+			  ;
+
+array-init_list: array-init
+				 | array-init_list COMMA array-init
+				 ;
+
+array-inits: OPEN_SQ_ANGL array-init_list CLOSE_SQ_ANGL
+			 ;
+
+array-init: expression 
+			| array-init OF expression
+			;
+
+number: CONSTANT
+		;
 	
-record-inits: OPEN_CURLY ID ASSIGN expression ';' ID ASSIGN expression  CLOSE_CURLY
-
-
-array-inits: OPEN_SQ_ANGL array-init ',' array-init   CLOSE_SQ_ANGL
-
-array-init: expression OF expression
-
-number: INTEGER 
-	| REAL
 	
 unary-op: '+' 
 	| '-' 
 	| NOT
+	;
 
 binary-op: ADD 
 	| SUB 
 	| MUL 
 	| DIV 
 	| MOD 
-	| OR 
-	| AND
+	| OR_OP 
+	| AND_OP
 	| GT_OP 
 	| LT_OP
 	| EQ_OP 
 	| GE_OP 
 	| LE_OP 
 	| NE_OP
+	;
 %%
 
-#include <stdio.h>
-
-extern char yytext[];
-extern int column;
-
-yyerror(s)
-char *s;
- 
-	fflush(stdout);
-	printf("\n%*s\n%*s\n", column, "^", column, s);
- 
+int yyerror(char * s) 
+/* yacc error handler */
+{    
+	printf ( "%s\n", s); 
+	return 0;
+}  

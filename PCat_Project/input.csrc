@@ -6,7 +6,7 @@ VAR SIZE:=5; I :=0; J :=0; K :=0;CELL:=0;
  VAR B := INT1D [< SIZE OF 0 >];
  VAR C := INT2D [< SIZE OF INT1D [< SIZE OF 0 >] >];
  VAR D := INT2D [< SIZE OF INT1D [< SIZE OF 0 >] >];
-BEGIN
+BEGINTEST
 FOR I:=0 TO SIZE-1 DO
 C[I][I]:= I+1;
 END;
@@ -30,3 +30,7 @@ FOR I:=0 TO SIZE-1 DO
 WRITE(D[I][0]," ",D[I][1]," ",D[I][2]," ",D[I][3],"
 ",D[I][4]);
 END;
+END;
+
+
+

@@ -4,79 +4,40 @@
 #include <stdio.h>
 #include "symbols.h"
 #include <errno.h>
-
+extern int yyparse(void);
 extern FILE* yyin;
-extern int yylex(void);
-const char* lexUnits[] = {  
-							"END",
-							"ARRAY",
-							"BEGIN",
-							"BY",
-							"DO",
-							"ELSE",
-							"ELSIF",
-							"EXIT",
-							"WHILE",
-							"IS",
-							"IF",
-							"LOOP",
-							"RETURN",
-							"NOT",
-							"OF",
-							"PROCEDURE",
-							"PROGRAM",
-							"READ",
-							"THEN",
-							"FOR",
-							"TO",
-							"TYPE",
-							"VAR",
-							"WRITE",
-							"RECORD",
-							"CONSTANT",
-							"STRING_LITERAL",
-							"ADD",
-							"SUB",
-							"MUL",
-							"DIV",
-							"MOD",
-							"OR_OP",
-							"LE_OP",
-							"GE_OP",
-							"LT_OP",
-							"GT_OP",
-							"EQ_OP",
-							"NE_OP",
-							"AND_OP",
-							"OPEN_BR",
-							"CLOSE_BR",
-							"OPEN_CURLY",
-							"CLOSE_CURLY",
-							"OPEN_SQUARE",
-							"CLOSE_SQUARE",
-							"OPEN_SQ_ANGL",
-							"CLOSE_SQ_ANGL",
-							"COMMA",
-							"COLON",
-							"ASSIGN",
-							"DOT",
-							"IDENTIFIER",
-							"END_OF_INSTRUCTION"};
+extern int yydebug;
+
 
 int main()
 {
-	int tokenValue = 0;
+	yydebug = 1;
 	yyin = fopen("input.csrc", "rt");
 	if (yyin != NULL)
 	{
-		while ((tokenValue = yylex()) != END)
+		int result = yyparse();
+		switch (result)
 		{
-			printf(" -> TOKEN ID: %d; Token Value: %s \n", tokenValue, lexUnits[tokenValue]);
+		case 0:
+			printf("Parse successfull.\n");
+			break;
+
+		case 1:
+			printf("Invalid input encountered\n");
+			break;
+
+		case 2:
+			printf("Out of memory\n");
+			break;
+
+		default:
+			break;
 		}
+		fclose(yyin);
 	}
 	else
 	{
-		printf("Fisierul de intrare nu poate fi deschis. Erorare: %d", errno);
+		printf("Fisier inexistent");
 	}
 
 

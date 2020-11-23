@@ -58,7 +58,7 @@ extern int yydebug;
     PROCEDURE = 259,               /* PROCEDURE  */
     IS = 260,                      /* IS  */
     OF = 261,                      /* OF  */
-    BEGIN = 262,                   /* BEGIN  */
+    BEGINTEST = 262,               /* BEGINTEST  */
     END = 263,                     /* END  */
     EXIT = 264,                    /* EXIT  */
     IF = 265,                      /* IF  */
@@ -83,16 +83,34 @@ extern int yydebug;
     NOT = 284,                     /* NOT  */
     VAR = 285,                     /* VAR  */
     ARRAY = 286,                   /* ARRAY  */
-    DIV = 287,                     /* DIV  */
-    MOD = 288,                     /* MOD  */
-    OR = 289,                      /* OR  */
-    AND = 290,                     /* AND  */
-    ASSIGN = 291,                  /* ASSIGN  */
-    OPEN_SQ_ANGL = 292,            /* OPEN_SQ_ANGL  */
-    CLOSE_SQ_ANGL = 293,           /* CLOSE_SQ_ANGL  */
-    NE_OP = 294,                   /* NE_OP  */
-    GE_OP = 295,                   /* GE_OP  */
-    LE_OP = 296                    /* LE_OP  */
+    MOD = 287,                     /* MOD  */
+    OR_OP = 288,                   /* OR_OP  */
+    ASSIGN = 289,                  /* ASSIGN  */
+    OPEN_SQ_ANGL = 290,            /* OPEN_SQ_ANGL  */
+    CLOSE_SQ_ANGL = 291,           /* CLOSE_SQ_ANGL  */
+    OPEN_BR = 292,                 /* OPEN_BR  */
+    CLOSE_BR = 293,                /* CLOSE_BR  */
+    OPEN_SQUARE = 294,             /* OPEN_SQUARE  */
+    CLOSE_SQUARE = 295,            /* CLOSE_SQUARE  */
+    OPEN_CURLY = 296,              /* OPEN_CURLY  */
+    CLOSE_CURLY = 297,             /* CLOSE_CURLY  */
+    NE_OP = 298,                   /* NE_OP  */
+    GE_OP = 299,                   /* GE_OP  */
+    LE_OP = 300,                   /* LE_OP  */
+    GT_OP = 301,                   /* GT_OP  */
+    LT_OP = 302,                   /* LT_OP  */
+    EQ_OP = 303,                   /* EQ_OP  */
+    ADD = 304,                     /* ADD  */
+    SUB = 305,                     /* SUB  */
+    MUL = 306,                     /* MUL  */
+    DIV = 307,                     /* DIV  */
+    END_OF_INSTRUCTION = 308,      /* END_OF_INSTRUCTION  */
+    COLON = 309,                   /* COLON  */
+    COMMA = 310,                   /* COMMA  */
+    DOT = 311,                     /* DOT  */
+    AND_OP = 312,                  /* AND_OP  */
+    CONSTANT = 313,                /* CONSTANT  */
+    STRING_LITERAL = 314           /* STRING_LITERAL  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
