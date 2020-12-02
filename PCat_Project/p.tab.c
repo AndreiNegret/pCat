@@ -70,11 +70,14 @@
 #line 2 "p.y"
 
     #include <stdio.h>
+	#include "ast.h"
 
-	int yyerror(char * s);
-	extern int yylex( );
+Node* astRoot = NULL;
+int yyerror(char * s);
+extern int yylex(void);
 
-#line 78 "p.tab.c"
+
+#line 81 "p.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -569,17 +572,17 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_int16 yyrline[] =
 {
-       0,    73,    73,    76,    79,    80,    83,    84,    85,    86,
-      89,    90,    93,    93,    96,    99,   102,   105,   106,   110,
-     113,   116,   117,   120,   121,   124,   127,   128,   129,   132,
-     133,   134,   135,   136,   137,   138,   139,   140,   141,   142,
-     143,   146,   147,   150,   151,   152,   155,   156,   159,   160,
-     161,   162,   163,   164,   165,   166,   169,   170,   173,   174,
-     175,   178,   179,   182,   183,   186,   187,   190,   193,   194,
-     197,   200,   201,   204,   208,   209,   210,   213,   214,   215,
-     216,   217,   218,   219,   220,   221,   222,   223,   224,   225
+       0,   117,   117,   120,   123,   124,   127,   128,   129,   130,
+     133,   134,   137,   138,   141,   144,   147,   150,   151,   154,
+     157,   160,   161,   164,   165,   168,   171,   172,   173,   176,
+     177,   178,   179,   180,   181,   182,   183,   184,   185,   186,
+     187,   190,   191,   194,   195,   196,   199,   200,   203,   204,
+     205,   206,   207,   208,   209,   210,   213,   214,   217,   218,
+     219,   222,   223,   226,   227,   230,   231,   234,   237,   238,
+     241,   244,   245,   248,   252,   253,   254,   257,   258,   259,
+     260,   261,   262,   263,   264,   265,   266,   267,   268,   269
 };
 #endif
 
@@ -1358,8 +1361,164 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
+  case 2: /* program: PROGRAM IS body END_OF_INSTRUCTION  */
+#line 117 "p.y"
+                                                                        { (yyval.node) = createProgramNode("PROGRAM", "IS", (yyvsp[-1].node)); astRoot = (yyval.node); }
+#line 1368 "p.tab.c"
+    break;
 
-#line 1363 "p.tab.c"
+  case 3: /* body: declaration_list BEGINTEST statement_list END  */
+#line 120 "p.y"
+                                                          { (yyval.node) = createBodyNode((yyvsp[-3].node), "BEGINTEST", (yyvsp[-1].node), "END"); }
+#line 1374 "p.tab.c"
+    break;
+
+  case 4: /* declaration_list: declaration  */
+#line 123 "p.y"
+                                                                                { (yyval.node) = createListNode("Declaration", (yyvsp[0].node)); }
+#line 1380 "p.tab.c"
+    break;
+
+  case 5: /* declaration_list: declaration_list declaration  */
+#line 124 "p.y"
+                                                                        { (yyval.node) = (yyvsp[-1].node); addLinkToList((yyval.node), (yyvsp[0].node));}
+#line 1386 "p.tab.c"
+    break;
+
+  case 7: /* declaration: VAR var-decl  */
+#line 128 "p.y"
+                                                                                                { (yyval.node) = createDeclarationNode("VAR", (yyvsp[0].node));}
+#line 1392 "p.tab.c"
+    break;
+
+  case 8: /* declaration: TYPE type-decl  */
+#line 129 "p.y"
+                                                                                                { (yyval.node) = createDeclarationNode("TYPE", (yyvsp[0].node));}
+#line 1398 "p.tab.c"
+    break;
+
+  case 9: /* declaration: PROCEDURE procedure-decl  */
+#line 130 "p.y"
+                                                                                        { (yyval.node) = createDeclarationNode("PROCEDURE", (yyvsp[0].node));}
+#line 1404 "p.tab.c"
+    break;
+
+  case 10: /* ID_list: ID  */
+#line 133 "p.y"
+                                                        { (yyval.node) = createListNode("Identifier", (yyvsp[0].strings)); }
+#line 1410 "p.tab.c"
+    break;
+
+  case 11: /* ID_list: ID_list COMMA ID  */
+#line 134 "p.y"
+                                                                                        { (yyval.node) = (yyvsp[-2].node); addLinkToList((yyval.node), (yyvsp[0].strings));}
+#line 1416 "p.tab.c"
+    break;
+
+  case 12: /* var-decl: simple_assign  */
+#line 137 "p.y"
+                                                        { (yyval.node) = createVarDeclaration((yyvsp[0].node), NULL); }
+#line 1422 "p.tab.c"
+    break;
+
+  case 13: /* var-decl: var-decl simple_assign  */
+#line 138 "p.y"
+                                                                { (yyval.node) = createVarDeclaration((yyvsp[-1].node), (yyvsp[0].node)); }
+#line 1428 "p.tab.c"
+    break;
+
+  case 14: /* simple_assign: ID_list ASSIGN expression END_OF_INSTRUCTION  */
+#line 141 "p.y"
+                                                                  { (yyval.node) = createSimpleAssign((yyvsp[-3].node), "ASSIGN", (yyvsp[-1].node)); }
+#line 1434 "p.tab.c"
+    break;
+
+  case 15: /* type-decl: typename IS type END_OF_INSTRUCTION  */
+#line 144 "p.y"
+                                                                  { (yyval.node) = createTypeDeclaration((yyvsp[-3].node), "IS", (yyvsp[-1].node));}
+#line 1440 "p.tab.c"
+    break;
+
+  case 16: /* procedure-decl: ID OPEN_BR formal-params CLOSE_BR COLON typename IS body END_OF_INSTRUCTION  */
+#line 147 "p.y"
+                                                                                                    { (yyval.node) = createProcedureDeclaration((yyvsp[-6].node), (yyvsp[-3].node), (yyvsp[-1].node));}
+#line 1446 "p.tab.c"
+    break;
+
+  case 17: /* type: ARRAY OF typename  */
+#line 150 "p.y"
+                                                        { (yyval.node) = createType(NULL, (yyvsp[0].node));}
+#line 1452 "p.tab.c"
+    break;
+
+  case 18: /* type: RECORD component component END  */
+#line 151 "p.y"
+                                                            { (yyval.node) = createType((yyvsp[-2].node), (yyvsp[-1].node));}
+#line 1458 "p.tab.c"
+    break;
+
+  case 19: /* typename: ID  */
+#line 154 "p.y"
+                                                        { (yyval.node) = createTypename("ID");}
+#line 1464 "p.tab.c"
+    break;
+
+  case 20: /* component: ID COLON typename END_OF_INSTRUCTION  */
+#line 157 "p.y"
+                                                       { (yyval.node) = createComponent("ID", (yyvsp[-1].node)); }
+#line 1470 "p.tab.c"
+    break;
+
+  case 21: /* fp-section_list: fp-section  */
+#line 160 "p.y"
+                                                                   { (yyval.node) = createListNode("FormalParameter", (yyvsp[0].node)); }
+#line 1476 "p.tab.c"
+    break;
+
+  case 22: /* fp-section_list: fp-section_list fp-section  */
+#line 161 "p.y"
+                                                                                                   { (yyval.node) = (yyvsp[-1].node); addLinkToList((yyval.node), (yyvsp[0].node)); }
+#line 1482 "p.tab.c"
+    break;
+
+  case 23: /* formal-params: OPEN_BR fp-section fp-section_list CLOSE_BR  */
+#line 164 "p.y"
+                                                                    { (yyval.node) = createFormalParameters((yyvsp[-2].node), (yyvsp[-1].node)); }
+#line 1488 "p.tab.c"
+    break;
+
+  case 24: /* formal-params: OPEN_BR CLOSE_BR  */
+#line 165 "p.y"
+                                                                        { (yyval.node) = createFormalParameters(NULL, NULL); }
+#line 1494 "p.tab.c"
+    break;
+
+  case 25: /* fp-section: ID COLON typename  */
+#line 168 "p.y"
+                                                                    { (yyval.node) = createFpSection("ID", (yyvsp[0].node));}
+#line 1500 "p.tab.c"
+    break;
+
+  case 26: /* statement_list: statement  */
+#line 171 "p.y"
+                                                                   { (yyval.node) = createListNode("Statement", (yyvsp[0].node)); }
+#line 1506 "p.tab.c"
+    break;
+
+  case 27: /* statement_list: statement_list statement  */
+#line 172 "p.y"
+                                                                                                           { (yyval.node) = (yyvsp[-1].node); addLinkToList((yyval.node), (yyvsp[0].node));}
+#line 1512 "p.tab.c"
+    break;
+
+  case 28: /* statement_list: %empty  */
+#line 173 "p.y"
+                                                                                   { (yyval.node) = createStatementList(NULL);}
+#line 1518 "p.tab.c"
+    break;
+
+
+#line 1522 "p.tab.c"
 
       default: break;
     }
@@ -1553,7 +1712,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 227 "p.y"
+#line 271 "p.y"
 
 
 int yyerror(char * s) 

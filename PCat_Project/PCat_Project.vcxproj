@@ -152,6 +152,7 @@ win_bison p.y --defines</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ast.c" />
     <ClCompile Include="lex.yy.c" />
     <ClCompile Include="p.tab.c" />
     <ClCompile Include="PCat_Project.c" />
@@ -162,6 +163,7 @@ win_bison p.y --defines</Command>
     <None Include="pCat.lex" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ast.h" />
     <ClInclude Include="p.tab.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
