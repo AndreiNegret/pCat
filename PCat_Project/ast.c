@@ -74,7 +74,7 @@ Node* createBodyNode(Node* declarationList, Node* statementList)
 }
 
 
-Node* createDeclarationNode(const char* identifier, Node* declaration)
+Node* createDeclarationNode(Node* declaration)
 {
 	Node* retNode = createDefaultNode("Declaration", 1);
 	
@@ -86,21 +86,51 @@ Node* createDeclarationNode(const char* identifier, Node* declaration)
 	return retNode;
 }
 
-Node* createVarDeclaration(Node* varDecl, Node* simpleAssign)
+Node* createVarDeclarationList(Node* varDecl)
 {
-	Node* retNode = createDefaultNode("VariableDeclaration", 2);
+	Node* retNode = createDefaultNode("VariableDeclarationList", 1);
 
 	if (retNode)
 	{
 		retNode->links[0] = varDecl;	
-		retNode->links[1] = simpleAssign;
 	}
 
 	return retNode;
 
 }
 
-Node* createSimpleAssign(Node* idList, const char* assign, Node* expression)
+
+Node* createIdList(const char* id)
+{
+	Node* retNode = createDefaultNode("IdList", 1);
+
+	if (retNode)
+	{
+		if (id)
+		{
+			retNode->links[0] = createDefaultNode("Identifier", 0);
+			sprintf(retNode->links[0]->extraData, "%s", id);
+		}
+	}
+
+	return retNode;
+
+}
+
+void addIdToList(Node* IdList, const char* Id)
+{
+	Node* newNode = createDefaultNode("Identifier", 0);
+
+	if (newNode)
+	{
+		sprintf(newNode->extraData, "%s", Id);
+	}
+
+	addLinkToList(IdList, newNode);
+}
+
+
+Node* createSimpleAssign(Node* idList, Node* expression)
 {
 	Node* retNode = createDefaultNode("SimpleAssign", 2);
 	
@@ -114,13 +144,13 @@ Node* createSimpleAssign(Node* idList, const char* assign, Node* expression)
 
 }
 
-Node* createTypeDeclaration(Node* typeDecl, const char* token, Node* type)
+Node* createTypeDeclaration(Node* typename, Node* type)
 {
 	Node* retNode = createDefaultNode("TypeDeclaration", 2);
 
 	if (retNode)
 	{
-		retNode->links[0] = typeDecl;
+		retNode->links[0] = typename;
 		retNode->links[1] = type;
 	}
 
@@ -143,7 +173,7 @@ Node* createProcedureDeclaration(Node* formalParams, Node* typename, Node* body)
 
 }
 
-Node* createType(Node* component, Node* typename)
+Node* createType(Node* component, Node* typename, const char* type)
 {
 	Node* retNode = createDefaultNode("Type", 2);
 
@@ -151,6 +181,7 @@ Node* createType(Node* component, Node* typename)
 	{
 		retNode->links[0] = component;
 		retNode->links[1] = typename;
+		sprintf(retNode->extraData, "%s", type);
 	}
 
 	return retNode;
@@ -162,20 +193,20 @@ Node* createTypename(const char* id)
 	Node* retVal = createDefaultNode("TypeName", 0);
 	
 	if (id)
+	{
 		sprintf(retVal->extraData, "%s", id);
+	}
 	
 	return retVal;
 }
 
-Node* createComponent(const char* id, Node* typename)
+Node* createComponent(Node* typename)
 {
 	Node* retNode = createDefaultNode("Component", 1);
 
 	if (retNode)
 	{
 		retNode->links[0] = typename;
-		if (id)
-			sprintf(retNode->extraData, "%s", id);
 	}
 
 	return retNode;
@@ -195,73 +226,411 @@ Node* createFormalParameters(Node* fpSection, Node* fpSectionList)
 	return retNode;
 }
 
-Node* createFpSection(const char* id, Node* typename)
+Node* createFpSection(Node* typename)
 {
 	Node* retNode = createDefaultNode("FpSection", 1);
 
 	if (retNode)
 	{
 		retNode->links[0] = typename;
-		if (id)
-			sprintf(retNode->extraData, "%s", id);
 	}
 
 	return retNode;
 }
 
-Node* createStatementList(Node* emptyStatement)
+
+Node* createLvalueStatement(Node* lvalue, Node* expression) 
 {
-	Node* retNode = createDefaultNode("EmptyStatement", 0);
+	Node* retNode = createDefaultNode("LvalueStatement", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = lvalue;
+		retNode->links[1] = expression;
+	}
 
 	return retNode;
 }
 
-//Node* createIfStatement(const char* identifierName, Node* thenStatement, Node* elseStatement) 
-//{
-//
-//	Node* retNode = createDefaultNode("IfStatement", 2);
-//	retNode->links[0] = thenStatement;
-//	retNode->links[1] = elseStatement;
-//	if (identifierName)
-//		sprintf(retNode->extraData, "%s", identifierName);
-//	return retNode;
-//}
-//
-//
-//Node* createWriteStatement(const char* writeparameters)
-//{
-//
-//	Node* retNode = createDefaultNode("WriteStatement", 1);
-//	retNode->links[0] = writeparameters;
-//
-//	if (writeparameters)
-//		sprintf(retNode->extraData, "%s", writeparameters);
-//	return retNode;
-//}
-//
-//Node* createNumber(const char* typeNumber)
-//{
-//	Node* retVal = createDefaultNode("Number", 0);
-//	if (typeNumber)
-//		sprintf(retVal->extraData, "%s", typeNumber);
-//	return retVal;
-//}
-//
-//Node* createUnaryOp(const char* typeUnaryOp)
-//{
-//	Node* retVal = createDefaultNode("UnaryOp", 0);
-//	if (typeUnaryOp)
-//		sprintf(retVal->extraData, "%s", typeUnaryOp);
-//	return retVal;
-//}
-//
-//Node* createBinaryOp(const char* typeBinaryOp)
-//{
-//	Node* retVal = createDefaultNode("BinaryOp", 0);
-//	if (typeBinaryOp)
-//	sprintf(retVal->extraData, "%s", typeBinaryOp);
-//	return retVal;
-//}
+Node* createIDStatement(const char* id, Node* actualparams)
+{
+	Node* retNode = createDefaultNode("IDStatement", 1);
+
+	if (retNode)
+	{
+		retNode->links[0] = actualparams;
+		if (id)
+			sprintf(retNode->extraData, "%s", id);
+	}
+	return retNode;
+}
+
+Node* createReadStatement(Node* lvalue, Node* lvaluelist)
+{
+	Node* retNode = createDefaultNode("ReadStatement", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = lvalue;
+		retNode->links[1] = lvaluelist;
+	}
+
+	return retNode;
+}
+
+Node* createWriteStatement(Node* writeparams)
+{
+
+	Node* retNode = createDefaultNode("WriteStatement", 1);
+
+	if (retNode)
+	{
+		retNode->links[0] = writeparams;
+	}
+	return retNode;
+}
+
+Node* createIfStatement(Node* expression, Node* statementlist)
+{
+	Node* retNode = createDefaultNode("IfStatement", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = expression;
+		retNode->links[1] = statementlist;
+	}
+
+	return retNode;
+}
+
+Node* createElsIfStatement(Node* expression, Node* statementlist)
+{
+	Node* retNode = createDefaultNode("ElsIfStatement", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = expression;
+		retNode->links[1] = statementlist;
+	}
+
+	return retNode;
+}
+
+Node* createElseStatement(Node* statementlist )
+{
+	Node* retNode = createDefaultNode("ElseStatement", 1);
+
+	if (retNode)
+	{
+		retNode->links[0] = statementlist;
+	}
+
+	return retNode;
+}
+
+Node* createWhileStatement(Node* expression, Node* statementlist)
+{
+	Node* retNode = createDefaultNode("WhileStatement", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = expression;
+		retNode->links[1] = statementlist;
+	}
+
+	return retNode;
+}
+
+Node* createLoopStatement(Node* statementlist)
+{
+	Node* retNode = createDefaultNode("LoopStatement", 1);
+
+	if (retNode)
+	{
+		retNode->links[0] = statementlist;
+	}
+
+	return retNode;
+}
+
+Node* createForStatement(Node* initExpression, Node* condExpression, Node* statementlist)
+{
+	Node* retNode = createDefaultNode("ForStatement", 3);
+
+	if (retNode)
+	{
+		retNode->links[0] = initExpression;
+		retNode->links[1] = condExpression;
+		retNode->links[2] = statementlist;
+	}
+
+	return retNode;
+}
+
+
+Node* createReturnStatement(Node* expression)
+{
+	Node* retNode = createDefaultNode("ReturnStatement", 1);
+
+	if (retNode)
+	{
+		retNode->links[0] = expression;
+	}
+
+	return retNode;
+}
+
+Node* createWriteParameters(Node* writeexprlist)  
+{
+	Node* retNode = createDefaultNode("WriteParameters", 1);
+
+	if (retNode)
+	{
+		retNode->links[0] = writeexprlist;
+	}
+
+	return retNode;
+}
+
+Node* createStringLiteral(const char* StringLiteral)
+{
+	Node* retVal = createDefaultNode("StringLiteral", 0);
+
+	if (retVal)
+	{
+		sprintf(retVal->extraData, "%s", StringLiteral);
+	}
+
+	return retVal;
+}
+
+
+Node* createWriteExpressions(Node* expression)
+{
+	Node* retNode = createDefaultNode("WriteExpressions", 1);
+
+	if (retNode)
+	{
+		retNode->links[0] = expression;
+	}
+
+	return retNode;
+}
+
+
+Node* createNumberExpression(Node* number)
+{
+	Node* retNode = createDefaultNode("NumberExpression", 1);
+
+	if (retNode)
+	{
+		retNode->links[0] = number;
+	}
+
+	return retNode;
+	
+}
+
+Node* createLvalueExpression(Node* lvalue)
+{
+	Node* retNode = createDefaultNode("LvalueExpression", 1);  
+
+	if (retNode)
+	{
+		retNode->links[0] = lvalue;
+	}
+
+	return retNode;
+
+}
+
+Node* createExpression(Node* expression)      
+{
+	Node* retNode = createDefaultNode("Expression", 1);
+
+	if (retNode)
+	{
+		retNode->links[0] = expression;
+	}
+
+	return retNode;
+
+}
+
+Node* createUnaryExpression(Node* unaryop, Node* expression)
+{
+	Node* retNode = createDefaultNode("UnaryExpression", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = unaryop;
+		retNode->links[1] = expression;
+	}
+
+	return retNode;
+
+}
+
+Node* createBinaryExpression(Node* expression1, Node* binaryop, Node* expression2)  
+{
+	Node* retNode = createDefaultNode("BinaryExpression", 3);
+
+	if (retNode)
+	{
+		retNode->links[0] = expression1;
+		retNode->links[1] = binaryop;
+		retNode->links[2] = expression2;
+	}
+
+	return retNode;
+
+}
+
+Node* createActualParametersExpression(Node* typename, Node* actualparams)
+{
+	Node* retNode = createDefaultNode("ActualParameters", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = typename;
+		retNode->links[1] = actualparams;
+	}
+
+	return retNode;
+
+}
+
+Node* createRecordInitsExpression(Node* typename, Node* recordinits)
+{
+	Node* retNode = createDefaultNode("RecordInits", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = typename;
+		retNode->links[1] = recordinits;
+	}
+
+	return retNode;
+
+}
+
+Node* createArrayInitsExpression(Node* typename, Node* arrayinits)
+{
+	Node* retNode = createDefaultNode("ArrayInits", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = typename;
+		retNode->links[1] = arrayinits;
+	}
+
+	return retNode;
+
+}
+
+Node* createLvalue(const char* id, Node* lvalue, Node* expression)
+{
+	Node* retNode = createDefaultNode("Lvalue", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = lvalue;
+		retNode->links[1] = expression;
+		if (id)
+			sprintf(retNode->extraData, "%s", id);
+	}
+
+	return retNode;
+
+}
+
+Node* createActualParameters(Node* expression, Node* expressionlist)    
+{
+	Node* retNode = createDefaultNode("ActualParameters", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = expression;
+		retNode->links[1] = expressionlist;
+	}
+
+	return retNode;
+
+}
+
+Node* createRecordInits(const char* id, Node* expression, Node* IdExpressionList)
+{
+	Node* retNode = createDefaultNode("RecordInits", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = expression;
+		retNode->links[1] = IdExpressionList;
+		if (id)
+			sprintf(retNode->extraData, "%s", id);
+	}
+
+	return retNode;
+
+}
+
+Node* createArrayInits(Node* arrayinitlist)     
+{
+	Node* retNode = createDefaultNode("ArrayInits", 1);
+
+	if (retNode)
+	{
+		retNode->links[0] = arrayinitlist;
+	}
+
+	return retNode;
+
+}
+
+Node* createArrayInit(Node* expression, Node* arrayinit) 
+{
+	Node* retNode = createDefaultNode("ArrayInit", 2);
+
+	if (retNode)
+	{
+		retNode->links[0] = expression;
+		retNode->links[1] = arrayinit;
+	}
+
+	return retNode;
+
+}
+
+Node* createNumber(int constant) 
+{
+	Node* retVal = createDefaultNode("Number", 0);
+
+	if (retVal)
+	{
+		sprintf(retVal->extraData, "%d", constant);
+	}
+
+	return retVal;
+
+}
+
+
+
+Node* createUnaryOp(const char* typeUnaryOp)
+{
+	Node* retNode = createDefaultNode("UnaryOp", 0);
+	if (typeUnaryOp)
+		sprintf(retNode->extraData, "%s", typeUnaryOp);
+	return retNode;
+}
+
+Node* createBinaryOp(const char* typeBinaryOp)
+{
+	Node* retNode = createDefaultNode("BinaryOp", 0);
+	if (typeBinaryOp)
+	sprintf(retNode->extraData, "%s", typeBinaryOp);
+	return retNode;
+}
 
 void printAst(Node* ast, int level)
 {

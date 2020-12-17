@@ -72,7 +72,7 @@ extern int yylex(void);
 %token DOT
 %token AND_OP
 %token <intVal> CONSTANT
-%token STRING_LITERAL
+%token <strings> STRING_LITERAL
 
 %type <node> program
 %type <node> body
@@ -122,39 +122,40 @@ body:  declaration_list  BEGINTEST  statement_list END    { $$ = createBodyNode(
 
 declaration_list: declaration							{ $$ = createListNode("Declaration", $1); }
 				| declaration_list declaration          { $$ = $1; addLinkToList($$, $2);}
+				|										{ $$ = createDeclarationNode(NULL); }
 				;
 
 declaration:  
-	| VAR  var-decl										{ $$ = createDeclarationNode("VAR", $2);}			
-	| TYPE  type-decl									{ $$ = createDeclarationNode("TYPE", $2);}
-	| PROCEDURE  procedure-decl							{ $$ = createDeclarationNode("PROCEDURE", $2);}
+	| VAR  var-decl										{ $$ = createDeclarationNode($2);}			
+	| TYPE  type-decl									{ $$ = createDeclarationNode($2);}
+	| PROCEDURE  procedure-decl							{ $$ = createDeclarationNode($2);}
 	;
 	
-ID_list: ID                                             { $$ = createListNode("Identifier", $1); }
-	     | ID_list COMMA ID								{ $$ = $1; addLinkToList($$, $3);}
+ID_list: ID                                             { $$ = createIdList($1); }
+	     | ID_list COMMA ID								{ $$ = $1; addIdToList($1, $3);}
 	     ;
 
-var-decl: simple_assign                                 { $$ = createVarDeclaration($1, NULL); }         
-		 | var-decl simple_assign                       { $$ = createVarDeclaration($1, $2); }     
+var-decl: simple_assign                                 { $$ = createVarDeclarationList($1); }         
+		 | var-decl simple_assign                       { $$ = $1; addLinkToList($1, $2); }     
 		;
 
-simple_assign: ID_list ASSIGN expression END_OF_INSTRUCTION       { $$ = createSimpleAssign($1, "ASSIGN", $3); }
+simple_assign: ID_list ASSIGN expression END_OF_INSTRUCTION       { $$ = createSimpleAssign($1, $3); }
 				;
 	
-type-decl: typename IS type END_OF_INSTRUCTION                    { $$ = createTypeDeclaration($1, "IS", $3);}
+type-decl: typename IS type END_OF_INSTRUCTION                    { $$ = createTypeDeclaration($1, $3);}
 		;
 	
 procedure-decl: ID OPEN_BR formal-params CLOSE_BR COLON typename IS body END_OF_INSTRUCTION         { $$ = createProcedureDeclaration($3, $6, $8);}
 		;
 
-type: ARRAY OF typename                                 { $$ = createType(NULL, $3);}                 
-	| RECORD component  component  END                  { $$ = createType($2, $3);}          	
+type: ARRAY OF typename                                 { $$ = createType(NULL, $3, "ARRAY OF");}                 
+	| RECORD component  component  END                  { $$ = createType($2, $3, "RECORD");}          	
 
 
-typename: ID                                            { $$ = createTypename("ID");} 
+typename: ID                                            { $$ = createTypename($1);} 
 		  ;
 
-component: ID COLON typename END_OF_INSTRUCTION        { $$ = createComponent("ID", $3); } 
+component: ID COLON typename END_OF_INSTRUCTION        { $$ = createComponent($3); } 
 		   ;
 
 fp-section_list: fp-section                                        { $$ = createListNode("FormalParameter", $1); }
@@ -165,108 +166,108 @@ formal-params: OPEN_BR fp-section fp-section_list CLOSE_BR          { $$ = creat
 	| OPEN_BR CLOSE_BR                                              { $$ = createFormalParameters(NULL, NULL); }  
 	;
 
-fp-section: ID COLON typename                                       { $$ = createFpSection("ID", $3);}  
+fp-section: ID COLON typename                                       { $$ = createFpSection($3);}  
 			;
 
 statement_list: statement                                          { $$ = createListNode("Statement", $1); }
 				| statement_list statement						   { $$ = $1; addLinkToList($$, $2);}
-				|                                                  { $$ = createStatementList(NULL);}                 
+				|                                                  { $$ = NULL;}                 
 				;
 
-statement: lvalue ASSIGN expression END_OF_INSTRUCTION									
-	| ID actual-params                                                                  
-	| READ OPEN_BR lvalue lvalue_list CLOSE_BR END_OF_INSTRUCTION                
-	| WRITE write-params END_OF_INSTRUCTION												
-	| IF expression THEN  statement_list												
-	| ELSIF expression THEN  statement_list												
-	| ELSE  statement_list  END END_OF_INSTRUCTION                                      
-	| WHILE expression DO  statement_list  END END_OF_INSTRUCTION                       
-	| LOOP  statement_list  END END_OF_INSTRUCTION                                      
-	| FOR ID ASSIGN expression TO expression DO statement_list END END_OF_INSTRUCTION   
-	| EXIT END_OF_INSTRUCTION                                                           
-	| RETURN expression END_OF_INSTRUCTION												
+statement: lvalue ASSIGN expression END_OF_INSTRUCTION									{ $$ = createLvalueStatement($1, $3);}           
+	| ID actual-params                                                                  { $$ = createIDStatement($1, $2);}                   
+	| READ OPEN_BR lvalue lvalue_list CLOSE_BR END_OF_INSTRUCTION                		{ $$ = createReadStatement($3, $4);}
+	| WRITE write-params END_OF_INSTRUCTION												{ $$ = createWriteStatement($2);}
+	| IF expression THEN  statement_list												{ $$ = createIfStatement($2, $4);}
+	| ELSIF expression THEN  statement_list												{ $$ = createElsIfStatement($2, $4);}
+	| ELSE  statement_list  END END_OF_INSTRUCTION                                      { $$ = createElseStatement($2);}
+	| WHILE expression DO  statement_list  END END_OF_INSTRUCTION                       { $$ = createWhileStatement($2, $4);}
+	| LOOP  statement_list  END END_OF_INSTRUCTION                                      { $$ = createLoopStatement($2);}
+	| FOR ID ASSIGN expression TO expression DO statement_list END END_OF_INSTRUCTION           { $$ = createForStatement($4, $6, $8);}
+	| EXIT END_OF_INSTRUCTION                                                           { $$ = NULL;}
+	| RETURN expression END_OF_INSTRUCTION												{ $$ = createReturnStatement($2);}
 	;
 
-write-expr_list: write-expr                                        
-				 | write-expr_list COMMA write-expr                
+write-expr_list: write-expr                                       { $$ = createListNode("WriteExpressions", $1); } 
+				 | write-expr_list COMMA write-expr               { $$ = $1; addLinkToList($$, $3);} 
 				 ;
 
-write-params: OPEN_BR write-expr_list CLOSE_BR                     
-	| OPEN_BR CLOSE_BR											   
-	| OPEN_BR STRING_LITERAL CLOSE_BR                              
+write-params: OPEN_BR write-expr_list CLOSE_BR                    { $$ = createWriteParameters($2);}  
+	| OPEN_BR CLOSE_BR											  { $$ =  NULL;}  
+	| OPEN_BR STRING_LITERAL CLOSE_BR                             { $$ = createStringLiteral($2);}        
 	;
 
-write-expr: STRING_LITERAL                                         
-	| expression												   
+write-expr: STRING_LITERAL                                        { $$ = NULL;}        
+	| expression												  { $$ = createWriteExpressions($1);}  
 	;
 
-expression: number                                                 
-	| lvalue													   
-	| OPEN_BR expression CLOSE_BR                                  
-	| unary-op expression										   
-	| expression binary-op expression							   
-	| typename actual-params									   
-	| typename record-inits                                        
-	| typename array-inits                                         
+expression: number                                                { $$ = createNumberExpression($1);}  
+	| lvalue													  { $$ = createLvalueExpression($1);}  
+	| OPEN_BR expression CLOSE_BR                                 { $$ = createExpression($2);}  
+	| unary-op expression										  { $$ = createUnaryExpression($1, $2);} 
+	| expression binary-op expression							  { $$ = createBinaryExpression($1, $2, $3);}  
+	| typename actual-params									  { $$ = createActualParametersExpression($1, $2);}  
+	| typename record-inits                                       { $$ = createRecordInitsExpression($1, $2);}        
+	| typename array-inits                                        { $$ = createArrayInitsExpression($1, $2);}        
 	;
 
-lvalue_list: lvalue                                               
-			| lvalue_list lvalue                                  
+lvalue_list: lvalue                                               { $$ = createListNode("Lvalues", $1); }  
+			| lvalue_list lvalue                                  { $$ = $1; addLinkToList($$, $2);}
 			;
 
-lvalue: ID                                                        
-	| lvalue OPEN_SQUARE expression CLOSE_SQUARE				  
-	| lvalue DOT ID												  
+lvalue: ID                                                        { $$ = createLvalue($1, NULL, NULL);} 
+	| lvalue OPEN_SQUARE expression CLOSE_SQUARE				  { $$ = createLvalue(NULL, $1, $3);} 
+	| lvalue DOT ID												  { $$ = createLvalue($3, $1, NULL);}      
 	;
 
-expression_list: expression										  
-					| expression_list expression                  
+expression_list: expression										  { $$ = createListNode("Expressions", $1); }
+					| expression_list expression                  { $$ = $1; addLinkToList($$, $2);}
 					;
 
-actual-params: OPEN_BR expression expression_list CLOSE_BR        
-			  | OPEN_BR CLOSE_BR								  
+actual-params: OPEN_BR expression expression_list CLOSE_BR        { $$ = createActualParameters($2, $3);} 
+			  | OPEN_BR CLOSE_BR								  { $$ = NULL;} 
 			  ;
 
-ID-expression_list: ID ASSIGN expression                          
-					| ID-expression_list ID ASSIGN expression     
+ID-expression_list: ID ASSIGN expression                          { $$ = createListNode("IdentifierExpressions", $3); }
+					| ID-expression_list ID ASSIGN expression     { $$ = $1; addLinkToList($$, $4);}
 					;
 	
-record-inits: OPEN_CURLY ID ASSIGN expression ID-expression_list CLOSE_CURLY    
+record-inits: OPEN_CURLY ID ASSIGN expression ID-expression_list CLOSE_CURLY         { $$ = createRecordInits($2, $4, $5);}   
 			  ;
 
-array-init_list: array-init                                      
-				 | array-init_list COMMA array-init              
+array-init_list: array-init                                       { $$ = createListNode("ArrayInit", $1); }   
+				 | array-init_list COMMA array-init               { $$ = $1; addLinkToList($$, $3);}
 				 ;												 
 																 
-array-inits: OPEN_SQ_ANGL array-init_list CLOSE_SQ_ANGL          
+array-inits: OPEN_SQ_ANGL array-init_list CLOSE_SQ_ANGL           { $$ = createArrayInits($2);} 
 			 ;													 
 																 
-array-init: expression                                           
-			| array-init OF expression							 
+array-init: expression                                            { $$ = createArrayInit($1, NULL);} 
+			| array-init OF expression							  { $$ = createArrayInit($1, $3);} 
 			;													 
 														 
-number: CONSTANT                                             
+number: CONSTANT                                             	  { $$ = createNumber($1);}                          
 		;												 
 														
 														 
-unary-op: '+'                                                
-	| '-'                                                    
-	| NOT                                                    
+unary-op: '+'                                                	  {$$ = createUnaryOp("+");}              
+	| '-'                                                    	  {$$ = createUnaryOp("-");}            
+	| NOT                                                    	  {$$ = createUnaryOp("NOT");}
 	;													 
 														 
-binary-op: ADD                                               
-	| SUB														 
-	| MUL                                                        
-	| DIV                                                        
-	| MOD                                                        
-	| OR_OP                                                      
-	| AND_OP                                                     
-	| GT_OP                                                      
-	| LT_OP                                                      
-	| EQ_OP                                                      
- 	| GE_OP                                                      
-	| LE_OP                                                      
-	| NE_OP                                                      
+binary-op: ADD                                               	  {$$ = createBinaryOp("ADD");}
+	| SUB														  {$$ = createBinaryOp("SUB");}
+	| MUL                                                         {$$ = createBinaryOp("MUL");}
+	| DIV                                                         {$$ = createBinaryOp("DIV");}
+	| MOD                                                         {$$ = createBinaryOp("MOD");}
+	| OR_OP                                                       {$$ = createBinaryOp("OR_OP");}
+	| AND_OP                                                      {$$ = createBinaryOp("AND_OP");}
+	| GT_OP                                                       {$$ = createBinaryOp("GT_OP");}
+	| LT_OP                                                       {$$ = createBinaryOp("LT_OP");}
+	| EQ_OP                                                       {$$ = createBinaryOp("EQ_OP");}
+ 	| GE_OP                                                       {$$ = createBinaryOp("GE_OP");} 
+	| LE_OP                                                       {$$ = createBinaryOp("LE_OP");}
+	| NE_OP                                                       {$$ = createBinaryOp("NE_OP");}
 	;
 %%
 
