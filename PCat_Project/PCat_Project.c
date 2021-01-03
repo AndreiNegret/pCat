@@ -5,10 +5,12 @@
 //#include "symbols.h"
 #include <errno.h>
 #include "ast.h"
+#include "SymbolTable.h"
 extern int yyparse(void);
 extern FILE* yyin;
 extern int yydebug;
 extern Node* astRoot;
+extern SymTableEntry* symTableEntryList;
 
 
 int main()
@@ -36,6 +38,9 @@ int main()
 			break;
 		}
 		printAst(astRoot, 0);
+		symTableEntryList = malloc(sizeof(SymTableEntry) * 1000);
+		createSymListFromTree(astRoot, 0);
+		printSymNodeList();
 		fclose(yyin);
 	}
 	else

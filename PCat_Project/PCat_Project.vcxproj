@@ -156,6 +156,7 @@ win_bison p.y --defines</Command>
     <ClCompile Include="lex.yy.c" />
     <ClCompile Include="p.tab.c" />
     <ClCompile Include="PCat_Project.c" />
+    <ClCompile Include="SymbolTable.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="input.csrc" />
@@ -165,6 +166,7 @@ win_bison p.y --defines</Command>
   <ItemGroup>
     <ClInclude Include="ast.h" />
     <ClInclude Include="p.tab.h" />
+    <ClInclude Include="SymbolTable.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
